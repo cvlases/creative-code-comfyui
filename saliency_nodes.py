@@ -41,7 +41,20 @@ SUPPORTED_MODELS = [
 
 _model_cache: dict = {}
 
-# ── Model loading — always CPU for gradient compatibility ─────────────────────
+# ── ImageNet class labels ─────────────────────────────────────────────────────
+_imagenet_labels: list = []
+
+def _get_imagenet_label(class_idx: int) -> str:
+    global _imagenet_labels
+    if not _imagenet_labels:
+        try:
+            import torchvision.models as tv
+            _imagenet_labels = tv.VGG16_Weights.DEFAULT.meta["categories"]
+        except Exception:
+            pass
+    if _imagenet_labels and 0 <= class_idx < len(_imagenet_labels):
+        return _imagenet_labels[class_idx]
+    return f"class_{class_idx}"
 def _load_model(model_name: str):
     if model_name not in _model_cache:
         _ensure_deps()
@@ -160,9 +173,15 @@ def _predict_top_class(model, img_np_hwc: np.ndarray) -> int:
 
 
 # ── Visualization helpers ──────────────────────────────────────────────────────
-def _vis_grayscale(mask3d):
+def _vis_grayscale(mask):
+    """Handle both 3D (H,W,3) gradient masks and 2D (H,W) XRAI region masks."""
+    if mask.ndim == 2:
+        # XRAI returns 2D directly — just normalize it
+        m = np.abs(mask)
+        vmax = np.percentile(m, 99)
+        return np.clip(m / (vmax + 1e-8), 0, 1)
     import saliency.core as saliency
-    return saliency.VisualizeImageGrayscale(mask3d)
+    return saliency.VisualizeImageGrayscale(mask)
 
 def _vis_diverging(mask3d):
     import saliency.core as saliency
@@ -210,8 +229,8 @@ def _run_saliency_method(method, call_fn, img_np, use_smoothgrad,
 
     elif method == "Blur IG":
         algo = saliency.BlurIG()
-        return algo.GetSmoothedMask(img_np, **smooth_kw, x_steps=ig_steps) \
-               if use_smoothgrad else algo.GetMask(img_np, **get_kw, x_steps=ig_steps)
+        return algo.GetSmoothedMask(img_np, **smooth_kw, steps=ig_steps) \
+               if use_smoothgrad else algo.GetMask(img_np, **get_kw, steps=ig_steps)
 
     elif method == "Guided IG":
         algo = saliency.GuidedIG()
@@ -357,6 +376,7 @@ class SaliencyArtNode:
         "screen",      # attention brightens salient areas
         "triptych",    # original | mask | composite side by side
         "mask_only",   # just the colored saliency map
+        "pure_white",  # black background, white gradient pixels only
     ]
 
     @classmethod
@@ -377,8 +397,8 @@ class SaliencyArtNode:
             "smoothgrad_samples": ("INT", {"default": 25, "min": 5, "max": 50}),
         }}
 
-    RETURN_TYPES  = ("IMAGE",)
-    RETURN_NAMES  = ("artwork",)
+    RETURN_TYPES  = ("IMAGE", "STRING")
+    RETURN_NAMES  = ("artwork", "classification_label")
     FUNCTION      = "create_art"
     CATEGORY      = "creative-code/art"
 
@@ -392,7 +412,9 @@ class SaliencyArtNode:
 
         if class_index < 0:
             class_index = _predict_top_class(model, img_np_r)
-            print(f"[SaliencyArt] Visualizing class {class_index}")
+
+        label = _get_imagenet_label(class_index)
+        print(f"[SaliencyArt] Visualizing class {class_index}: {label}")
 
         call_fn = _make_call_model_fn(model, class_index)
         mask3d = _run_saliency_method(method, call_fn, img_np_r,
@@ -401,7 +423,9 @@ class SaliencyArtNode:
 
         artwork = self._compose(mask3d, img_np_r, composition, colormap,
                                 intensity, contrast, threshold)
-        return (_np_to_comfy(artwork),)
+
+        caption = f"{label} (class {class_index}) — {model_name} / {method}"
+        return (_np_to_comfy(artwork), caption)
 
     def _compose(self, mask3d, original, composition, colormap,
                  intensity, contrast, threshold):
@@ -446,6 +470,11 @@ class SaliencyArtNode:
         elif composition == "triptych":
             overlay = np.clip(original * (1 - intensity) + heatmap * intensity, 0, 1)
             return np.concatenate([original, heatmap, overlay], axis=1)
+
+        elif composition == "pure_white":
+            # Black background, white where the gradient fires
+            white = gray[..., None] * np.ones((1, 1, 3), dtype=np.float32)
+            return np.clip(white, 0, 1)
 
         return heatmap
 
