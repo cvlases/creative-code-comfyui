@@ -22,19 +22,19 @@ snoothgrad_samples: 25
 
 
 Vanilla Gradient
-![hex](../documentation/method_demo/vanilla_grad.png)
+![Vanilla](method_demo/vanilla_grad.png)
 
 Smooth Gradient
-![hex](/method_demo/smooth_grad.png)
+![Smooth](method_demo/smooth_grad.png)
 
 Integrated Gradient
-![hex](method_demo/integrated_grad.png)
+![Integrated](method_demo/integrated_grad.png)
 
 Blur Integrated Gradients
-![hex](../method_demo/blur_ig.png)
+![Blur](method_demo/blur_ig.png)
 
 Guided Integrated Gradients
-![hex](documentation/method_demo/guided_ig.png)
+![Guided](method_demo/guided_ig.png)
 
 XRAI
-![hex](documentation/method_demo/XRAI.png)
+![XRAI](method_demo/XRAI.png)
