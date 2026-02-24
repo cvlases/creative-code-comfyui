@@ -36,7 +36,8 @@ IMAGENET_STD  = np.array([0.229, 0.224, 0.225], dtype=np.float32)
 SUPPORTED_MODELS = [
     "vgg16", "vgg19", "resnet50", "resnet101",
     "inception_v3", "mobilenet_v3_large",
-    "efficientnet_b0", "densenet121",
+    # "efficientnet_b0",
+    "densenet121",
 ]
 
 _model_cache: dict = {}
@@ -72,7 +73,7 @@ def _load_model(model_name: str):
                         "vgg16":              tv.VGG16_Weights.DEFAULT,
                         "vgg19":              tv.VGG19_Weights.DEFAULT,
                         "mobilenet_v3_large": tv.MobileNet_V3_Large_Weights.DEFAULT,
-                        "efficientnet_b0":    tv.EfficientNet_B0_Weights.DEFAULT,
+                        # "efficientnet_b0":    tv.EfficientNet_B0_Weights.DEFAULT,
                         "densenet121":        tv.DenseNet121_Weights.DEFAULT,
                     }
                     model = constructor(weights=weight_map.get(model_name))
