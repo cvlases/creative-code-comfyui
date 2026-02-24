@@ -1,57 +1,56 @@
 # Running the Saliency Art Node
 
-This tool is a custom node for [ComfyUI](https://github.com/comfyanonymous/ComfyUI), an open-source node-based interface for running generative AI pipelines locally. The node interrogates pretrained image classifiers using gradient-based saliency methods, visualizing what the model attends to when it classifies an image.
+This is a custom node for [ComfyUI](https://github.com/comfyanonymous/ComfyUI), a local node-based interface for building AI pipelines. The node lets you point a pretrained image classifier at a photo and visualize what it's actually paying attention to when it makes a decision.
 
 ---
 
 ## What is ComfyUI?
 
-ComfyUI is a local, node-based interface for building AI image pipelines. Unlike web-based tools, it runs entirely on your machine — no API keys, no cloud, no data leaving your computer. You build workflows by connecting nodes: each node does one thing (load an image, run a model, save output), and you wire them together visually.
+ComfyUI is essentially a visual programming environment for AI that runs entirely on your own machine. You build workflows by connecting nodes — each node does one thing, and you wire them together. No cloud, no API keys, nothing leaves your computer.
 
-This project adds a custom node set to ComfyUI that exposes saliency visualization as a first-class pipeline step — meaning you can chain it with other nodes, batch process images, and experiment with parameters in real time.
+I used it for this project because it let me treat saliency visualization as just another step in a pipeline — something I could experiment with in real time, swap parameters on the fly, and chain with other nodes. It's a bit of a learning curve at first but once it clicks, it's a really satisfying way to work.
 
 ---
 
 ## Running ComfyUI Locally
 
-### Requirements
+### What you need
 
-- Python 3.10+ (this project used **Python 3.13.5** via Anaconda)
-- A conda or virtual environment is strongly recommended
-- Mac Apple Silicon (M-series), Windows, or Linux
-- GPU optional but recommended — this node runs on CPU by design (see [Technical Notes](#technical-notes))
+- Python 3.10+ (I used **Python 3.13.5** via Anaconda)
+- A conda environment keeps things clean and is strongly recommended
+- Mac, Windows, or Linux — I ran this on a MacBook Pro M-series
 
-### Installation
+### Setup
 ```bash
-# Clone the ComfyUI repository
+# Clone ComfyUI
 git clone https://github.com/comfyanonymous/ComfyUI.git
 cd ComfyUI
 
-# Create and activate a conda environment
+# Create a conda environment
 conda create -n comfyenv python=3.13
 conda activate comfyenv
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Start ComfyUI
+# Run it
 python main.py
 ```
 
-Then open `http://127.0.0.1:8188` in your browser. You'll see the node canvas.
+Open `http://127.0.0.1:8188` in your browser and you'll see the node canvas. That's it.
 
 ---
 
-## Installing the Saliency Node
+## Installing the Node
 
-### 1. Install Python dependencies
+### 1. Install the extra Python packages
 
-With your ComfyUI conda environment active:
+With your ComfyUI environment active:
 ```bash
 pip install saliency matplotlib torchvision
 ```
 
-### 2. Place the node files
+### 2. Drop the files in
 
 Copy the `creative_code/` folder into ComfyUI's custom nodes directory:
 ```
@@ -62,53 +61,44 @@ ComfyUI/
         └── saliency_nodes.py
 ```
 
-`__init__.py` tells ComfyUI this folder is a node package. It should contain:
-```python
-from .saliency_nodes import NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS
-```
-
 ### 3. Restart ComfyUI
 ```bash
 python main.py
 ```
 
-You should see this in the startup log, confirming the node loaded:
+If it worked, you'll see this in the startup log:
 ```
 0.0 seconds: /path/to/ComfyUI/custom_nodes/creative_code
 ```
 
-The nodes will appear in the node menu under **creative-code/art** and **creative-code/explainability**.
+The nodes show up in the node menu under **creative-code/art** and **creative-code/explainability**.
 
 ---
 
 ## Basic Workflow
 
-The minimal working pipeline is three nodes:
+The simplest setup is three nodes:
 ```
 [Load Image] → [SaliencyArt] → [Preview Image]
 ```
 
 1. Right-click the canvas → Add Node → image → **Load Image**
-2. Right-click → Add Node → creative-code/art → **Saliency Art — Algorithmic Attention**
+2. Right-click → Add Node → creative-code/art → **Saliency Art**
 3. Right-click → Add Node → image → **Preview Image**
-4. Connect **Load Image** `IMAGE` output → **SaliencyArt** `image` input
-5. Connect **SaliencyArt** `artwork` output → **Preview Image** `images` input
-6. Upload an image in the Load Image node
-7. Click **Queue Prompt**
+4. Wire them: Load Image `IMAGE` → SaliencyArt `image` → Preview Image `images`
+5. Upload a photo, hit **Queue Prompt**
 
-The first run downloads the model weights (~500MB for VGG16) automatically. Subsequent runs use the cached weights.
+The first run will download the model weights automatically (~500MB for VGG16) and cache them. Every run after that is instant.
 
-The node also outputs a `classification_label` string — wire this to a **Show Text** node to see what the model classified the image as and which class is being visualized.
+You can also wire the `classification_label` output to a **Show Text** node — it'll tell you what class the model predicted and which one is being visualized.
 
 ---
 
-## How the Node Was Built
+## How I Built the Node (and What Went Wrong)
 
-ComfyUI custom nodes are Python classes that follow a specific interface. Each node declares its inputs, outputs, and a function that gets called when the pipeline runs.
+ComfyUI custom nodes are Python classes that follow a specific interface — you define your inputs, outputs, and a function that runs when the pipeline executes. Straightforward in theory.
 
-### Node structure
-
-A minimal ComfyUI node looks like this:
+The structure looks like this:
 ```python
 class MyNode:
     @classmethod
@@ -124,32 +114,26 @@ class MyNode:
     CATEGORY = "my-category"
 
     def run(self, image, my_param):
-        # do something with image
         return (processed_image,)
 
 NODE_CLASS_MAPPINGS = {"MyNode": MyNode}
-NODE_DISPLAY_NAME_MAPPINGS = {"MyNode": "My Node (Display Name)"}
+NODE_DISPLAY_NAME_MAPPINGS = {"MyNode": "My Node"}
 ```
 
-ComfyUI reads `NODE_CLASS_MAPPINGS` at startup and registers each class as a node. The `INPUT_TYPES` dict defines what appears in the node's UI — dropdowns for string lists, sliders for floats, toggles for booleans. `RETURN_TYPES` defines the output ports.
+ComfyUI reads `NODE_CLASS_MAPPINGS` at startup and registers each class. The `INPUT_TYPES` dict builds the UI automatically — dropdowns, sliders, toggles, all from the type declarations.
 
-### The scaffolding problem
+### The cookiecutter trap
 
-The recommended way to create a new node is via a cookiecutter template:
-```bash
-pip install cookiecutter
-cookiecutter https://github.com/bronkula/comfyui-node-template
-```
+The recommended starting point for a new node is a cookiecutter scaffold template. I used it. The template generated `__init.py__` instead of `__init__.py` — wrong placement of the double underscores — which caused ComfyUI to silently skip the node at startup with zero error messages. Took a while to figure out. Rename the file before you do anything else.
 
-However, the template has a known issue: it generates `__init.py__` (wrong) instead of `__init__.py` (correct), which causes ComfyUI to silently skip the node at startup with no error. The fix is to rename the file manually before doing anything else.
+### The actual hard part: gradients inside ComfyUI
 
-### The key technical challenge: gradients inside ComfyUI
+This was the real challenge. ComfyUI wraps all node execution inside `torch.inference_mode()` — a PyTorch context that disables the gradient engine entirely for performance. That's totally fine for diffusion models that only need forward passes. But saliency methods work by computing gradients (backward passes through the network), which inference mode makes completely impossible.
 
-The core difficulty in building this node was that **ComfyUI wraps all node execution inside `torch.inference_mode()`** — a PyTorch context that disables the autograd engine entirely for performance. This is fine for diffusion models that only need forward passes, but saliency methods require computing gradients (backward passes), which inference mode makes impossible.
+It took several iterations to get this right. The fix ended up needing three layers:
 
-Three layers of fixes were required:
-
-**1. Load models outside inference mode.** Model weights created inside `inference_mode()` are permanently marked as "inference tensors" and can't participate in gradient computation even if you later try to enable gradients. The solution is to wrap the entire model loading step in `torch.inference_mode(False)`:
+**1. Load models outside inference mode.**
+Model weights created inside inference mode are permanently tagged as "inference tensors" — they can't participate in gradient computation even if you enable gradients later. Solution: wrap the entire model load in `torch.inference_mode(False)`:
 ```python
 with torch.inference_mode(False):
     with torch.enable_grad():
@@ -157,7 +141,8 @@ with torch.inference_mode(False):
         model.eval().cpu()
 ```
 
-**2. Escape inference mode at call time.** Even with models loaded correctly, the `call_model_function` that the saliency library calls repeatedly during computation runs inside ComfyUI's inference mode context. Each call needs to explicitly break out:
+**2. Escape inference mode on every call.**
+The saliency library calls your model function repeatedly during computation, and each call happens inside ComfyUI's inference mode context. Each call needs to break out explicitly:
 ```python
 def call_model_function(images, ...):
     with torch.inference_mode(False):
@@ -168,34 +153,26 @@ def call_model_function(images, ...):
             gradients = images_tensor.grad.detach().numpy()
 ```
 
-**3. Force CPU for gradient computation.** On Apple Silicon (MPS backend), PyTorch's MPS implementation drops `requires_grad` silently during certain operations, making backward passes fail even when autograd is enabled. All gradient computation runs on CPU; the classification forward pass (which doesn't need gradients) can use MPS for speed.
+**3. Force CPU on Apple Silicon.**
+On MPS (the Mac GPU backend), PyTorch silently drops `requires_grad` during certain operations — backward passes fail with no useful error. Everything gradient-related runs on CPU. The classification forward pass (which doesn't need gradients) still uses MPS for speed.
 
-### File structure
-```
-creative_code/
-├── __init__.py          # registers nodes with ComfyUI
-└── saliency_nodes.py    # all node logic
-    ├── _load_model()         # loads + caches torchvision models
-    ├── _make_call_model_fn() # builds the saliency library callback
-    ├── _predict_top_class()  # auto-detects ImageNet class
-    ├── _run_saliency_method() # dispatches to PAIR saliency methods
-    ├── _compose()            # applies composition modes
-    ├── SaliencyMapNode       # single method output
-    ├── SaliencyComparisonNode # all-methods grid
-    └── SaliencyArtNode       # main art node
-```
+Getting here involved a lot of error messages that all looked identical but had different root causes. The errors were:
+
+- `element 0 of tensors does not require grad` → inference mode not escaped
+- `Inference tensors cannot be saved for backward` → model weights created inside inference mode
+- `Input type (MPSFloatType) and weight type (torch.FloatTensor) should be the same` → device mismatch between tensor and model
+
+Each one required a different fix. Fun times.
 
 ---
 
-## Technical Notes
+## A Few Things Worth Knowing
 
-**Why CPU?** Gradient-based saliency on Apple Silicon (MPS) silently drops `requires_grad` during backward passes, producing incorrect results with no error message. All saliency computation runs on CPU to guarantee correctness. The classification forward pass (auto-detecting the top class) still uses MPS for speed since it doesn't require gradients.
+**The first run is slow.** PyTorch downloads pretrained weights the first time you select a model (~100–550MB depending on which one). After that it's cached at `~/.cache/torch/hub/checkpoints/` and loads instantly.
 
-**Why these specific library versions?** The PAIR saliency library's `BlurIG` method uses `steps` as its parameter name while all other IG-family methods use `x_steps` — an inconsistency in their API. The node handles this internally so you don't have to.
+**XRAI takes a lot longer than the other methods.** It works completely differently — segmenting the image into regions rather than computing pixel-level gradients — so it's slower by nature. Budget a few minutes rather than a few seconds.
 
-**XRAI is slower.** XRAI uses a fundamentally different algorithm (image segmentation + region attribution) rather than pixel-level gradients. It typically takes several minutes on CPU versus seconds for gradient methods.
-
-**Model weights are cached.** The first time you select a model, PyTorch downloads the pretrained weights (~100–550MB depending on the model) to `~/.cache/torch/hub/checkpoints/`. Subsequent runs load from cache instantly.
+**The PAIR saliency library has one quirk.** `BlurIG` uses `steps` as its parameter name while every other IG-family method uses `x_steps`. Inconsistency in their API that the node handles internally so you don't have to think about it.
 
 ---
 
@@ -203,11 +180,11 @@ creative_code/
 
 | Package | Purpose |
 |---------|---------|
-| `saliency` | Google PAIR saliency methods (GradCAM, IG, XRAI, etc.) |
+| `saliency` | Google PAIR saliency methods |
 | `torchvision` | Pretrained ImageNet models |
 | `matplotlib` | Colormaps |
-| `torch` | Included with ComfyUI |
-| `numpy` | Included with ComfyUI |
+| `torch` | Comes with ComfyUI |
+| `numpy` | Comes with ComfyUI |
 
 ## Resources
 
@@ -215,15 +192,10 @@ creative_code/
 - [ComfyUI Registry Documentation](https://docs.comfy.org/registry/publishing) - Learn how to publish your extension
 - [ComfyUI Frontend Repository](https://github.com/cvlases/ComfyUI-Frontend) - The main ComfyUI frontend codebase
 - [Official ComfyUI Frontend Types](https://www.npmjs.com/package/@comfyorg/comfyui-frontend-types) - TypeScript definitions for ComfyUI
-- [React Extension Guide](REACT_EXTENSION_GUIDE.md) - Detailed guide for creating React extensions
-- [TypeScript Documentation](https://www.typescriptlang.org/docs/)
-- [React Documentation](https://react.dev/reference/react)
-- [Jest Documentation](https://jestjs.io/docs/getting-started)
-- [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
+- [Claude Code](https://code.claude.com/docs/en/overview)
+- [Saliency Tutorial](https://github.com/PAIR-code/saliency/blob/master/Examples_pytorch.ipynb)
 
-## Contributing
 
-Contributions are welcome! Feel free to open issues or submit pull requests to improve this template.
 
 ## License
 
