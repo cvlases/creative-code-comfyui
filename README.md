@@ -1,212 +1,213 @@
-# creative-code
+# Running the Saliency Art Node
 
-![react-example-demo](https://github.com/cvlases/creative_code/blob/assets-branch/docs/demo.gif)
+This tool is a custom node for [ComfyUI](https://github.com/comfyanonymous/ComfyUI), an open-source node-based interface for running generative AI pipelines locally. The node interrogates pretrained image classifiers using gradient-based saliency methods, visualizing what the model attends to when it classifies an image.
 
-![demo pic](https://github.com/cvlases/creative_code/blob/assets-branch/react-example-demo.png)
+---
 
-A minimal template for creating React/TypeScript frontend extensions for ComfyUI, with complete boilerplate setup.
+## What is ComfyUI?
 
-📚 **[ComfyUI JavaScript Developer Documentation](https://docs.comfy.org/custom-nodes/js/javascript_overview)** - Learn how to use ComfyUI's powerful extension APIs.
+ComfyUI is a local, node-based interface for building AI image pipelines. Unlike web-based tools, it runs entirely on your machine — no API keys, no cloud, no data leaving your computer. You build workflows by connecting nodes: each node does one thing (load an image, run a model, save output), and you wire them together visually.
 
-## Features
+This project adds a custom node set to ComfyUI that exposes saliency visualization as a first-class pipeline step — meaning you can chain it with other nodes, batch process images, and experiment with parameters in real time.
 
-- **React & TypeScript Integration**: Ready-to-use setup for creating modern UI components within ComfyUI
-- **Internationalization Framework**: Built-in i18n support with English and Chinese examples
-- **ComfyUI API Integration**: Properly typed access to ComfyUI's internal API
-- **Full TypeScript Support**: Type-safe code using ComfyUI's official type definitions
-- **Auto-Reload Development**: Watch mode for seamless development experience
+---
 
-## Installation
+## Running ComfyUI Locally
 
-### From ComfyUI Registry (Recommended)
+### Requirements
 
-The easiest way to install this extension is through the ComfyUI Manager:
+- Python 3.10+ (this project used **Python 3.13.5** via Anaconda)
+- A conda or virtual environment is strongly recommended
+- Mac Apple Silicon (M-series), Windows, or Linux
+- GPU optional but recommended — this node runs on CPU by design (see [Technical Notes](#technical-notes))
 
-1. Open ComfyUI and go to the Manager
-2. Search for "React Extension Template"
-3. Click Install
-
-### Manual Installation
-
-If you want to install directly from GitHub for development purposes:
-
+### Installation
 ```bash
-# Go to your ComfyUI custom_nodes directory
-cd ComfyUI/custom_nodes
+# Clone the ComfyUI repository
+git clone https://github.com/comfyanonymous/ComfyUI.git
+cd ComfyUI
 
-# Clone the repository
-git clone https://github.com/cvlases/creative_code.git
-
-# Build the React application
-cd creative_code/ui
-npm install
-npm run build
-
-# Restart ComfyUI
-```
-
-⚠️ **Important**: When installing manually from GitHub, you **must** run `npm run build` in the `ui/` directory before the extension will work. The extension requires the compiled React code in the `dist/` folder to function properly in ComfyUI.
-
-## Usage
-
-This template includes a simple example extension that displays workflow node statistics. After installation:
-
-1. Look for the "React Example" tab in the ComfyUI sidebar
-2. Click to open the example UI
-
-When developing your own extension, you can:
-1. Replace the example UI in App.tsx with your own components
-2. Update the tab title and icon in main.tsx
-3. Customize the extension's appearance and behavior
-
-## Development
-
-### Setup Development Environment
-
-```bash
-# Go to the UI directory
-cd ui
+# Create and activate a conda environment
+conda create -n comfyenv python=3.13
+conda activate comfyenv
 
 # Install dependencies
-npm install
+pip install -r requirements.txt
 
-# Start development mode (watches for changes)
-npm run watch
+# Start ComfyUI
+python main.py
 ```
 
-### Available ComfyUI Extension APIs
+Then open `http://127.0.0.1:8188` in your browser. You'll see the node canvas.
 
-This template provides access to ComfyUI's powerful JavaScript APIs through the official type definitions. You can use these APIs to build rich extensions:
+---
 
-- **Sidebar Tabs**: Create custom sidebar panels like this template demonstrates
-- **Bottom Bar Panels**: Add panels to the bottom of the UI
-- **Top Menu Items**: Add custom entries to the top menu
-- **Context Menus**: Create custom context menus for the graph
-- **Settings**: Add settings to the ComfyUI settings panel
-- **Toasts**: Display notification messages
-- **Commands**: Create and register custom commands
-- **Hotkeys/Keybindings**: Register custom keyboard shortcuts
-- **About Panel Badges**: Add badges to the about panel
-- **App Events**: Listen to and respond to app events
-- **Graph Manipulation**: Programmatically manipulate the workflow graph
+## Installing the Saliency Node
 
-For comprehensive documentation on all available APIs, see the [ComfyUI JavaScript Developer Documentation](https://docs.comfy.org/custom-nodes/js/javascript_overview).
+### 1. Install Python dependencies
 
-### File Structure
+With your ComfyUI conda environment active:
+```bash
+pip install saliency matplotlib torchvision
+```
 
+### 2. Place the node files
+
+Copy the `creative_code/` folder into ComfyUI's custom nodes directory:
+```
+ComfyUI/
+└── custom_nodes/
+    └── creative_code/
+        ├── __init__.py
+        └── saliency_nodes.py
+```
+
+`__init__.py` tells ComfyUI this folder is a node package. It should contain:
+```python
+from .saliency_nodes import NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS
+```
+
+### 3. Restart ComfyUI
+```bash
+python main.py
+```
+
+You should see this in the startup log, confirming the node loaded:
+```
+0.0 seconds: /path/to/ComfyUI/custom_nodes/creative_code
+```
+
+The nodes will appear in the node menu under **creative-code/art** and **creative-code/explainability**.
+
+---
+
+## Basic Workflow
+
+The minimal working pipeline is three nodes:
+```
+[Load Image] → [SaliencyArt] → [Preview Image]
+```
+
+1. Right-click the canvas → Add Node → image → **Load Image**
+2. Right-click → Add Node → creative-code/art → **Saliency Art — Algorithmic Attention**
+3. Right-click → Add Node → image → **Preview Image**
+4. Connect **Load Image** `IMAGE` output → **SaliencyArt** `image` input
+5. Connect **SaliencyArt** `artwork` output → **Preview Image** `images` input
+6. Upload an image in the Load Image node
+7. Click **Queue Prompt**
+
+The first run downloads the model weights (~500MB for VGG16) automatically. Subsequent runs use the cached weights.
+
+The node also outputs a `classification_label` string — wire this to a **Show Text** node to see what the model classified the image as and which class is being visualized.
+
+---
+
+## How the Node Was Built
+
+ComfyUI custom nodes are Python classes that follow a specific interface. Each node declares its inputs, outputs, and a function that gets called when the pipeline runs.
+
+### Node structure
+
+A minimal ComfyUI node looks like this:
+```python
+class MyNode:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {
+            "image": ("IMAGE",),
+            "my_param": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 1.0}),
+        }}
+
+    RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("output",)
+    FUNCTION = "run"
+    CATEGORY = "my-category"
+
+    def run(self, image, my_param):
+        # do something with image
+        return (processed_image,)
+
+NODE_CLASS_MAPPINGS = {"MyNode": MyNode}
+NODE_DISPLAY_NAME_MAPPINGS = {"MyNode": "My Node (Display Name)"}
+```
+
+ComfyUI reads `NODE_CLASS_MAPPINGS` at startup and registers each class as a node. The `INPUT_TYPES` dict defines what appears in the node's UI — dropdowns for string lists, sliders for floats, toggles for booleans. `RETURN_TYPES` defines the output ports.
+
+### The scaffolding problem
+
+The recommended way to create a new node is via a cookiecutter template:
+```bash
+pip install cookiecutter
+cookiecutter https://github.com/bronkula/comfyui-node-template
+```
+
+However, the template has a known issue: it generates `__init.py__` (wrong) instead of `__init__.py` (correct), which causes ComfyUI to silently skip the node at startup with no error. The fix is to rename the file manually before doing anything else.
+
+### The key technical challenge: gradients inside ComfyUI
+
+The core difficulty in building this node was that **ComfyUI wraps all node execution inside `torch.inference_mode()`** — a PyTorch context that disables the autograd engine entirely for performance. This is fine for diffusion models that only need forward passes, but saliency methods require computing gradients (backward passes), which inference mode makes impossible.
+
+Three layers of fixes were required:
+
+**1. Load models outside inference mode.** Model weights created inside `inference_mode()` are permanently marked as "inference tensors" and can't participate in gradient computation even if you later try to enable gradients. The solution is to wrap the entire model loading step in `torch.inference_mode(False)`:
+```python
+with torch.inference_mode(False):
+    with torch.enable_grad():
+        model = torchvision.models.vgg16(weights=...)
+        model.eval().cpu()
+```
+
+**2. Escape inference mode at call time.** Even with models loaded correctly, the `call_model_function` that the saliency library calls repeatedly during computation runs inside ComfyUI's inference mode context. Each call needs to explicitly break out:
+```python
+def call_model_function(images, ...):
+    with torch.inference_mode(False):
+        with torch.enable_grad():
+            images_tensor = torch.from_numpy(images).clone().requires_grad_(True)
+            output = model(images_tensor)
+            output[:, class_idx].sum().backward()
+            gradients = images_tensor.grad.detach().numpy()
+```
+
+**3. Force CPU for gradient computation.** On Apple Silicon (MPS backend), PyTorch's MPS implementation drops `requires_grad` silently during certain operations, making backward passes fail even when autograd is enabled. All gradient computation runs on CPU; the classification forward pass (which doesn't need gradients) can use MPS for speed.
+
+### File structure
 ```
 creative_code/
-├── .github/                    # GitHub configurations
-│   └── workflows/
-│       └── react-build.yml     # Automatic build and publishing workflow
-├── __init__.py                 # Python entry point for ComfyUI integration
-├── pyproject.toml              # Project metadata for ComfyUI Registry
-├── dist/                       # Built extension files (generated)
-└── ui/                         # React application
-    ├── public/
-    │   └── locales/            # Internationalization files
-    │       ├── en/
-    │       │   └── main.json   # English translations
-    │       └── zh/
-    │           └── main.json   # Chinese translations
-    ├── src/
-    │   ├── App.tsx             # Main React component with example UI
-    │   ├── App.css             # Styles for the example UI
-    │   ├── index.css           # Global styles and theme variables
-    │   ├── main.tsx            # Entry point for React app
-    │   ├── vite-env.d.ts       # Vite environment types
-    │   ├── setupTests.ts       # Testing environment setup
-    │   ├── __tests__/          # Unit tests for components
-    │   │   └── dummy.test.tsx  # Example test
-    │   └── utils/
-    │       └── i18n.ts         # Internationalization setup
-    ├── eslint.config.js        # ESLint configuration
-    ├── jest.config.js          # Jest testing configuration
-    ├── jest.setup.js           # Jest setup file
-    ├── package.json            # npm dependencies
-    ├── tsconfig.json           # TypeScript configuration
-    ├── tsconfig.node.json      # TypeScript configuration for Node
-    └── vite.config.ts          # Build configuration
+├── __init__.py          # registers nodes with ComfyUI
+└── saliency_nodes.py    # all node logic
+    ├── _load_model()         # loads + caches torchvision models
+    ├── _make_call_model_fn() # builds the saliency library callback
+    ├── _predict_top_class()  # auto-detects ImageNet class
+    ├── _run_saliency_method() # dispatches to PAIR saliency methods
+    ├── _compose()            # applies composition modes
+    ├── SaliencyMapNode       # single method output
+    ├── SaliencyComparisonNode # all-methods grid
+    └── SaliencyArtNode       # main art node
 ```
 
-### TypeScript Support
+---
 
-This extension uses the official `@comfyorg/comfyui-frontend-types` package for type-safe interaction with ComfyUI APIs. To install it:
+## Technical Notes
 
-```bash
-cd ui
-npm install -D @comfyorg/comfyui-frontend-types
-```
+**Why CPU?** Gradient-based saliency on Apple Silicon (MPS) silently drops `requires_grad` during backward passes, producing incorrect results with no error message. All saliency computation runs on CPU to guarantee correctness. The classification forward pass (auto-detecting the top class) still uses MPS for speed since it doesn't require gradients.
 
-## Publishing to ComfyUI Registry
+**Why these specific library versions?** The PAIR saliency library's `BlurIG` method uses `steps` as its parameter name while all other IG-family methods use `x_steps` — an inconsistency in their API. The node handles this internally so you don't have to.
 
-### Prerequisites
+**XRAI is slower.** XRAI uses a fundamentally different algorithm (image segmentation + region attribution) rather than pixel-level gradients. It typically takes several minutes on CPU versus seconds for gradient methods.
 
-1. Set up a [Registry](https://registry.comfy.org) account
-2. Create an API key at https://registry.comfy.org/nodes
+**Model weights are cached.** The first time you select a model, PyTorch downloads the pretrained weights (~100–550MB depending on the model) to `~/.cache/torch/hub/checkpoints/`. Subsequent runs load from cache instantly.
 
-### Steps to Publish
+---
 
-1. Install the comfy-cli tool:
-   ```bash
-   pip install comfy-cli
-   ```
+## Dependencies
 
-2. Verify your pyproject.toml has the correct metadata:
-   ```toml
-   [project]
-   name = "your_extension_name"  # Use a unique name for your extension
-   description = "Your extension description here."
-   version = "0.1.0"  # Increment this with each update
-
-   [tool.comfy]
-   PublisherId = "your_publisher_id"  # Your Registry publisher ID
-   DisplayName = "Your Extension Display Name"
-   includes = ["dist/"]  # Include built React code (normally ignored by .gitignore)
-   ```
-
-3. Publish your extension:
-   ```bash
-   comfy-cli publish
-   ```
-
-4. When prompted, enter your API key
-
-### Automatic Publishing with GitHub Actions
-
-This template includes a GitHub Actions workflow that automatically publishes to the ComfyUI Registry whenever you update the version in pyproject.toml:
-
-1. Go to your repository's Settings > Secrets and variables > Actions
-2. Create a new repository secret called `REGISTRY_ACCESS_TOKEN` with your API key
-3. Commit and push an update to pyproject.toml (e.g., increment the version number)
-4. The GitHub Action will automatically run and publish your extension
-
-The workflow configuration is set up in `.github/workflows/react-build.yml` and will trigger when:
-- The `pyproject.toml` file is modified and pushed to the `main` branch
-
-The workflow automatically:
-1. Sets up Node.js environment
-2. Installs dependencies (`npm install`)
-3. Builds the React extension (`npm run build`)
-4. Publishes the extension to the ComfyUI Registry
-
-## Unit Testing
-
-This template includes a basic setup for unit testing with Jest and React Testing Library:
-
-```bash
-# Run tests
-npm test
-
-# Run tests in watch mode during development
-npm run test:watch
-```
-
-Example tests can be found in the `src/__tests__` directory. The setup includes:
-
-- Jest for running tests
-- React Testing Library for testing components
-- Mock implementation of the ComfyUI window.app object
+| Package | Purpose |
+|---------|---------|
+| `saliency` | Google PAIR saliency methods (GradCAM, IG, XRAI, etc.) |
+| `torchvision` | Pretrained ImageNet models |
+| `matplotlib` | Colormaps |
+| `torch` | Included with ComfyUI |
+| `numpy` | Included with ComfyUI |
 
 ## Resources
 
