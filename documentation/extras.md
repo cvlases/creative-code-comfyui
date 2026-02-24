@@ -1,85 +1,75 @@
-# Colormap Examples
-Keeping everything the same, but changing the color map to demonstrate visual differences.
+# Other Parameters
 
+> model: vgg16 · method: Guided IG · composition: invert · colormap: magma · **parameter: varies** · all others at default
 
-Other Parameters
-intensity — How strongly the saliency visualization is blended onto the original. 0 = invisible, 1 = full. Most compositions look best between 0.6–0.85.
-contrast (gamma) — Applies a power function to the saliency values before visualization. Values above 1.0 compress the low end and expand the high end — making the most salient regions pop dramatically while less important regions fade further. Cranking this to 2.5–3.0 produces extreme, high-drama results where only the very top attention regions survive.
-threshold — Used primarily by isolation and cutout modes. Sets the minimum saliency value to be considered "attended to." Higher values make the visualization sparser and more selective — only the regions the model is most confident about survive.
-class_index — ImageNet has 1000 classes. By default (-1) the node auto-detects what the model predicted and visualizes attention for that class. You can override this to force the visualization to show what the model would attend to if it were trying to classify the image as a specific thing — for example, forcing class 207 (golden retriever) on a human portrait produces attention patterns for a question the model was never meant to answer, which has interesting artistic implications.
-input_size — All these models were trained on fixed-size inputs. 224×224 is standard for most; InceptionV3 requires 299×299. The image is resized to this before processing, which is why the output appears at that resolution.
-use_smoothgrad — When enabled on top of any method (except SmoothGrad which already does this), applies the SmoothGrad averaging process to smooth the result. Generally produces more aesthetically pleasing outputs at the cost of being slower.
-smoothgrad_samples — How many noisy samples to average when SmoothGrad is active. 25 is a good balance; 50+ produces very smooth results but takes proportionally longer.
+| Parameter | Default | Effect |
+|-----------|---------|--------|
+| **intensity** | 0.75 | How strongly the saliency map blends onto the original. 0 = invisible, 1 = full replacement. |
+| **contrast** | 1.5 | Power function applied to saliency values. Above 1.0 makes top regions pop and low regions fade. 2.5–3.0 is extreme — only the very highest attention survives. |
+| **threshold** | 0.25 | Minimum saliency value to count as "attended to." Used mainly by `isolation` and `cutout`. Higher = sparser, more selective output. |
+| **class_index** | -1 (auto) | Which ImageNet class to visualize attention for. -1 auto-detects the model's top prediction. Overriding forces the model to answer a different question — e.g. class 207 (golden retriever) on a human portrait shows attention for a question it was never meant to answer. |
+| **input_size** | 224 | Models require fixed-size square inputs. 224×224 is standard; InceptionV3 requires 299. Not adjusted here — most models require 224 to run correctly. |
+| **use_smoothgrad** | true | Adds SmoothGrad noise-averaging on top of any method. Produces smoother, more aesthetically stable results at the cost of speed. |
+| **smoothgrad_samples** | 25 | How many noisy passes to average when SmoothGrad is active. 25 balances smoothness and speed; 50+ is noticeably smoother but proportionally slower. |
 
+---
 
-## What is it? 
+### Intensity
 
-Model_name: vgg16
-method: guided IG
-composition: inverse
-colormap: magma
-[the following IS WHAT CHANGES]
-default values:
+Default **0.75** — chosen as the point where the saliency map clearly dominates while still leaving enough of the original image readable as context.
 
-intensity: 0.75
-contrast: 1.5
-threshold: 0.25
-class_index: -1
-input_size: 224
-uses_smooth_grad: true
-snoothgrad_samples: 25
+**0.5** (lower) ![intensity_0.5](extras_demo/intensity_0.5.png)
 
+**1.0** (full) ![intensity_1.0](extras_demo/intensity_1.0.png)
 
-## listed out
-should explain why i picked the default values i did. 
-
-### Intensity 
-
-intensity = 0.5
-(lower)
-![low_intensity](method_demo/intensity_0.5.png)
-
-intensity = 1.0
-(higher)
-![high_intensity](method_demo/intensity_1.0.png)
+---
 
 ### Contrast
 
-contrast = 1.0
-(lower)
-![low_contrast](method_demo/contrast_1.0.png)
+Default **1.5** — adds drama without becoming so aggressive that only a handful of pixels survive. Values above 2.0 start to feel like thresholding.
 
-contrast = 2.0
-(higher)
-![high_contrast](method_demo/contrast_2.0.png)
+**1.0** (flat, no adjustment) ![contrast_1.0](extras_demo/contrast_1.0.png)
 
-### threshold
-threshold = 0.0
-(lower)
-![low_threshold](method_demo/threshold_0.png)
+**2.0** (more aggressive) ![contrast_2.0](extras_demo/contrast_2.0.png)
 
-threshold = 0.5
-(higher)
-![high_threshold](method_demo/threshold_0.5.png)
+---
 
- ### class index
-class index = 1
-(a little change)
-![index-1](method_demo/class_index_1.png)
+### Threshold
 
-class index = 10
-(a larger change)
-![index-10](method_demo/class_index_10.png)
+Default **0.25** — eliminates low-confidence gradient noise while preserving the meaningful attended region. At 0.0 everything is included; at 0.5 only the top quarter of saliency values show.
 
- ### input size
- Didn't adjust this because most models require this size (224) to run properly. 
+**0.0** (nothing filtered) ![threshold_0](extras_demo/threshold_0.png)
 
- ### uses smooth grad
-Without (uses smooth grad = false)
-![false](method_demo/smooth_grad_false.png.png)
+**0.5** (aggressive filtering) ![threshold_0.5](extras_demo/threshold_0.5.png)
 
+---
 
+### Class Index
 
- ### smooth grad samples
-samples = 50
- ![samples_50](method_demo/samples_50.png)
+Default **-1 (auto)** — visualizes attention for whatever the model actually predicted. Overriding this forces the model to attend to features of a class it wasn't trying to find, producing maps that can feel alien or misaligned — attention patterns searching for something that isn't there.
+
+**class 1** (slight displacement) ![class_index_1](extras_demo/class_index_1.png)
+
+**class 10** (larger displacement) ![class_index_10](extras_demo/class_index_10.png)
+
+---
+
+### Input Size
+
+Default **224** — not demonstrated here because most models require this exact size to run correctly. InceptionV3 is the only exception, requiring 299.
+
+---
+
+### Use SmoothGrad
+
+Default **true** — the smoothing improvement is significant and 25 samples is fast enough that the tradeoff is worth it for almost all use cases.
+
+**false** (raw gradients, no smoothing) ![smooth_grad_false](extras_demo/smooth_grad_false.png)
+
+---
+
+### Smoothgrad Samples
+
+Default **25** — a reliable balance. Below 10 starts to look patchy; above 50 the improvement becomes marginal relative to the time cost.
+
+**50 samples** ![samples_50](extras_demo/samples_50.png)

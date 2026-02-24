@@ -1,63 +1,39 @@
 # Composition Examples
-Keeping everything the same, but changing the composition to demonstrate visual differences.
 
-## Understanding compostion modes
-These control how the saliency map is composited back onto the original image. This is where the artistic intent lives.
-isolation — The default and most conceptually pointed for your project. Salient regions show in full color using the chosen colormap; everything else is converted to greyscale. The effect: the machine's gaze burns in color while everything it ignores fades to grey. Very direct visual commentary on algorithmic attention.
-overlay — Classic heatmap blend. The colormap is alpha-composited over the original at the intensity level. Familiar, readable, less subversive.
-spotlight — The salient regions are bright, everything else darkens dramatically. Feels like a searchlight or surveillance camera — forensic, clinical.
-ghost — The original image fades to 25% opacity and the saliency map glows over it. The subject becomes spectral, haunted by its own classification. Good for an uncanny effect.
-invert — Shows what the algorithm ignores instead of what it sees. The saliency map is flipped before compositing. Conceptually this is the most subversive mode — it visualizes the blind spots, the parts of a face that are invisible to the machine.
-cutout — Hard binary mask. Pixels above the threshold value show the original image; everything below shows a dim version of the heatmap. Creates a stark, graphic effect — the subject literally cut out by the algorithm's attention boundary.
-multiply — Photoshop-style multiply blend. Attention dims non-salient areas. Produces a dark, moody result where ignored regions sink into shadow.
-screen — Photoshop-style screen blend. Attention brightens salient regions. Lighter and more luminous than multiply — glowing rather than shadowed.
-triptych — Outputs three panels side by side: original | saliency map alone | composite. Designed for gallery or exhibition display — shows the full chain of the visualization in one image.
-mask_only — Just the colored saliency map with no original image. Pure algorithmic output, no human context.
+Composition modes control how the saliency map is rendered back onto the original image. This is where the artistic intent lives.
 
-## What is it? 
+> model: vgg16 · method: Guided IG · colormap: magma · intensity: 0.75 · contrast: 1.5 · threshold: 0.25 · class_index: -1 · input_size: 224 · use_smoothgrad: true · smoothgrad_samples: 25 · **composition: varies**
 
-Model_name: vgg16
-method: guided IG
-composition: THIS IS WHAT CHANGES
-colormap: magma
-intensity: 0.75
-contrast: 1.5
-threshold: 0.25
-class_index: -1
-input_size: 224
-uses_smooth_grad: true
-snoothgrad_samples: 25
+| Mode | Effect |
+|------|--------|
+| **isolation** | Salient regions in full colormap color; everything else greyscale. The machine's gaze burns in color while what it ignores fades away. The default — most direct visual commentary on algorithmic attention. |
+| **overlay** | Classic heatmap alpha-blend over the original. Familiar and readable, less subversive. |
+| **spotlight** | Salient regions bright, everything else darkened dramatically. Feels like a searchlight or surveillance camera — forensic, clinical. |
+| **ghost** | Original fades to 25% opacity, saliency map glows over it. Subject becomes spectral, haunted by its own classification. |
+| **invert** | Shows what the algorithm *ignores* instead of what it sees. The most subversive mode — visualizes blind spots, the parts of a face invisible to the machine. |
+| **cutout** | Hard binary mask. Pixels above threshold show the original; below shows a dim heatmap. The subject literally cut out by the algorithm's attention boundary. |
+| **multiply** | Photoshop-style multiply blend. Ignored regions sink into shadow. Dark and moody. |
+| **screen** | Photoshop-style screen blend. Salient regions glow brighter. Lighter and more luminous than multiply. |
+| **triptych** | Three panels side by side: original · saliency map · composite. Full chain of the visualization in one frame. Gallery-ready. |
+| **mask_only** | Just the colored saliency map, no original. Pure algorithmic output, no human context. |
+| **pure_white** | Black background, saliency values mapped to white intensity. Like an x-ray or photogram — the raw shape of what the algorithm attended to, stripped of all color and context. |
 
+**cutout** ![cutout](composition_demo/cutout.png)
 
-## What is it?
+**ghost** ![ghost](composition_demo/ghost.png)
 
+**invert** ![invert](composition_demo/invert.png)
 
-cutout
-![cutout](method_demo/cutout.png)
+**isolation** ![isolation](composition_demo/isolation.png)
 
-ghost
-![ghost](method_demo/ghost.png)
+**mask_only** ![mask_only](composition_demo/mask_only.png)
 
-invert
-![invert](method_demo/invert.png)
+**multiply** ![multiply](composition_demo/multiply.png)
 
-isolation
-![isolation](method_demo/isolation.png)
+**overlay** ![overlay](composition_demo/overlay.png)
 
-mask only
-![mask](method_demo/mask_only.png)
+**pure_white** ![pure_white](composition_demo/pure_white.png)
 
-multiply
-![multiply](method_demo/multiply.png)
+**screen** ![screen](composition_demo/screen.png)
 
-overlay
-![overlay](method_demo/overlay.png)
-
-pure white
-![white](method_demo/pure_white.png)
-
-screen
-![screen](method_demo/screen.png)
-
-triplych
-![triplych](method_demo/triplych.png)
+**triptych** ![triptych](composition_demo/triplych.png)
