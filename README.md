@@ -126,16 +126,6 @@ ComfyUI reads `NODE_CLASS_MAPPINGS` at startup and registers each class. The `IN
 
 ---
 
-## A Few Things Worth Knowing
-
-**The first run is slow.** PyTorch downloads pretrained weights the first time you select a model (~100–550MB depending on which one). After that it's cached at `~/.cache/torch/hub/checkpoints/` and loads instantly.
-
-**XRAI takes a lot longer than the other methods.** It works completely differently — segmenting the image into regions rather than computing pixel-level gradients — so it's slower by nature. Budget a few minutes rather than a few seconds.
-
-**The PAIR saliency library has one quirk.** `BlurIG` uses `steps` as its parameter name while every other IG-family method uses `x_steps`. Inconsistency in their API that the node handles internally so you don't have to think about it.
-
----
-
 ## Dependencies
 
 | Package | Purpose |
