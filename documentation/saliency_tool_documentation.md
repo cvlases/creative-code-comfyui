@@ -1,16 +1,16 @@
 # Algorithmic Attention (XAI) Tool Documentation
 
 
-![flower](model_demo/flower-three.png)
+![flower](../artwork_assets/flower-three.png)
 
 My tool uses pretrained image classifiers using gradient-based saliency methods from Google's [PAIR saliency library](https://github.com/PAIR-code/saliency), exposing the hidden attentional logic of neural networks as visual artifacts. Built as a custom ComfyUI node set.
 
 The core question it answers: *when a model classifies an image, which pixels drove that decision?*
 (and, how can we make art with *algorithmic attention*.
 
-![street1](model_demo/street1.png)
-![street2](model_demo/street2.png)
-![street3](model_demo/street3.png)
+![street1](../artwork_assets/street1.png)
+![street2](../artwork_assets/street2.png)
+![street3](../artwork_assets/street3.png)
 
 ---
 
@@ -275,7 +275,7 @@ Photoshop-style screen blend. Attention brightens salient regions.
 
 Outputs three panels side by side: original image | saliency map alone | composite. Shows the full chain of the visualization in one frame. 
 
-![triptych](composition_demo/triplych.png)
+![triptych](composition_demo/triptych.png)
 
 ---
 
