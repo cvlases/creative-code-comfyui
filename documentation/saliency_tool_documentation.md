@@ -8,9 +8,7 @@ My tool uses pretrained image classifiers using gradient-based saliency methods 
 The core question it answers: *when a model classifies an image, which pixels drove that decision?*
 (and, how can we make art with *algorithmic attention*.
 
-![street1](../artwork_assets/street1.png)
-![street2](../artwork_assets/street2.png)
-![street3](../artwork_assets/street3.png)
+
 
 ---
 
@@ -463,3 +461,15 @@ Default: **25**
 ---
 
 *Tool built with [PAIR Saliency](https://github.com/PAIR-code/saliency), [PyTorch](https://pytorch.org/), and [ComfyUI](https://github.com/comfyanonymous/ComfyUI).*
+
+
+---
+
+Some artwork I've made with the tool so far:
+
+![street1](../artwork_assets/street1.png)
+![street2](../artwork_assets/street2.png)
+![street3](../artwork_assets/street3.png)
+![street4](../artwork_assets/street4.png)
+![street5](../artwork_assets/street5.png)
+![street6](../artwork_assets/street6.png)
