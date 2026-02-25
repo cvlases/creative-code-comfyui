@@ -355,9 +355,9 @@ class SaliencyComparisonNode:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Node 3: Saliency Art — the main art node
+# Node 3: Explainable AI — the main art node
 # ══════════════════════════════════════════════════════════════════════════════
-class SaliencyArtNode:
+class ExplainableAIArtNode:
 
     METHODS = SaliencyMapNode.METHODS
 
@@ -415,7 +415,7 @@ class SaliencyArtNode:
             class_index = _predict_top_class(model, img_np_r)
 
         label = _get_imagenet_label(class_index)
-        print(f"[SaliencyArt] Visualizing class {class_index}: {label}")
+        print(f"[ExplainableAI] Visualizing class {class_index}: {label}")
 
         call_fn = _make_call_model_fn(model, class_index)
         mask3d = _run_saliency_method(method, call_fn, img_np_r,
@@ -484,11 +484,11 @@ class SaliencyArtNode:
 NODE_CLASS_MAPPINGS = {
     "SaliencyMap":        SaliencyMapNode,
     "SaliencyComparison": SaliencyComparisonNode,
-    "SaliencyArt":        SaliencyArtNode,
+    "SaliencyArt":        ExplainableAIArtNode,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "SaliencyMap":        "Saliency Map (PAIR)",
     "SaliencyComparison": "Saliency Comparison Grid (PAIR)",
-    "SaliencyArt":        "Saliency Art — Algorithmic Attention",
+    "SaliencyArt":        "Explainable AI — Attention Art",
 }
