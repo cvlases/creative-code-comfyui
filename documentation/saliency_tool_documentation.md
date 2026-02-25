@@ -25,6 +25,9 @@ The core question it answers: *when a model classifies an image, which pixels dr
 
 ## How It Works
 
+![node](../the_node.png)
+
+
 All eight supported models are **convolutional neural networks (CNNs)** trained on ImageNet, which is a dataset of 1.2 million images across 1,000 categories. The training process adjusts millions of numerical weights until the network can reliably distinguish between categories like "labrador retriever," "coffee," and "duck."
 
 What makes them useful for saliency visualization is that they're all **differentiable**, built from mathematical operations (matrix multiplications, convolutions, activation functions), so you can calculate the derivative of the classification output with respect to any input pixel. That derivative is the gradient: *if I changed this pixel slightly, how much would the model's confidence change?* High gradient = the model is paying attention to that pixel.
