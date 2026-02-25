@@ -480,5 +480,6 @@ Some artwork I've made with the tool so far:
 ![street12](../artwork_assets/street12.png)
 ![street7](../artwork_assets/street7.png)
 ![street8](../artwork_assets/street8.png)
+
 ![street9](../artwork_assets/street9.png)
 ![street11](../artwork_assets/street11.png)
