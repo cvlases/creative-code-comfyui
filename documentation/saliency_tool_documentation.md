@@ -470,6 +470,9 @@ Default: **25**
 
 Some artwork I've made with the tool so far:
 
+
+classifications of this image: *croquet ball, goldfish, mailbox*
+
 ![street10](../artwork_assets/street10.png)
 ![street1](../artwork_assets/street1.png)
 ![street2](../artwork_assets/street2.png)
