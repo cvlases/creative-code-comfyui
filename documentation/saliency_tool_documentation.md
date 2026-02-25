@@ -3,10 +3,24 @@
 
 ![flower](../artwork_assets/flower-three.png)
 
-My tool uses pretrained image classifiers using gradient-based saliency methods from Google's [PAIR saliency library](https://github.com/PAIR-code/saliency), exposing the hidden attentional logic of neural networks as visual artifacts. Built as a custom ComfyUI node set.
+My tool uses pre-trained image classifiers using gradient-based saliency methods from Google's [PAIR saliency library](https://github.com/PAIR-code/saliency), exposing the hidden attentional logic of neural networks as visual artifacts. Built as a custom ComfyUI node set. 
 
-The core question it answers: *when a model classifies an image, which pixels drove that decision?*
-(and, how can we make art with *algorithmic attention*.
+I've been interested in Explainable AI (XAI) for some time now, and wanted to actually *UNDERSTAND* how it works. 
+
+XAI:
+> a set of processes and methods that allows human users to comprehend and trust the results and output created by machine learning algorithms [(IBM, 2022)](https://github.com/PAIR-code/saliency)
+
+
+I do research with phD student Katelyn Morrison, and learned about [her work with saliency mapping](https://cmu-vis-2021.github.io/Insightful-Saliency-Maps/), which is a visual way to show what areas of an image are most significant for ML classification.
+
+![map](../documentation/saliency_map.png)
+
+When I saw these maps, I immediately wondered if I could make art using ML classifications.
+
+So, I built this tool.
+
+The core question my tool seeks to answer: *when a model classifies an image, which pixels drove that decision?*
+(and, how can we make art with this *algorithmic attention*).
 
 
 
@@ -28,7 +42,7 @@ The core question it answers: *when a model classifies an image, which pixels dr
 ![node](../documentation/the_node.png)
 
 
-All eight supported models are **convolutional neural networks (CNNs)** trained on ImageNet, which is a dataset of 1.2 million images across 1,000 categories. The training process adjusts millions of numerical weights until the network can reliably distinguish between categories like "labrador retriever," "coffee," and "duck."
+All seven supported models are **convolutional neural networks (CNNs)** trained on ImageNet, which is a dataset of 1.2 million images across 1,000 categories. The training process adjusts millions of numerical weights until the network can reliably distinguish between categories like "labrador retriever," "coffee," and "duck."
 
 What makes them useful for saliency visualization is that they're all **differentiable**, built from mathematical operations (matrix multiplications, convolutions, activation functions), so you can calculate the derivative of the classification output with respect to any input pixel. That derivative is the gradient: *if I changed this pixel slightly, how much would the model's confidence change?* High gradient = the model is paying attention to that pixel.
 
@@ -464,6 +478,13 @@ Default: **25**
 ---
 
 *Tool built with [PAIR Saliency](https://github.com/PAIR-code/saliency), [PyTorch](https://pytorch.org/), and [ComfyUI](https://github.com/comfyanonymous/ComfyUI).*
+
+---
+
+## Next steps
+
+- Figuring out how to make my node install on RunComfy 
+- Making this into a GUI / desktop app so you can use this without needing to know comfy.
 
 
 ---
