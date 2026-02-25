@@ -25,7 +25,7 @@ The core question it answers: *when a model classifies an image, which pixels dr
 
 ## How It Works
 
-![node](../the_node.png)
+![node](../documentation/the_node.png)
 
 
 All eight supported models are **convolutional neural networks (CNNs)** trained on ImageNet, which is a dataset of 1.2 million images across 1,000 categories. The training process adjusts millions of numerical weights until the network can reliably distinguish between categories like "labrador retriever," "coffee," and "duck."
