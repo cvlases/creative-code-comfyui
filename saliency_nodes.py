@@ -490,5 +490,5 @@ NODE_CLASS_MAPPINGS = {
 NODE_DISPLAY_NAME_MAPPINGS = {
     "SaliencyMap":        "Saliency Map (PAIR)",
     "SaliencyComparison": "Saliency Comparison Grid (PAIR)",
-    "SaliencyArt":        "Explainable AI — Attention Art",
+    "SaliencyArt":        "Explainable AI",
 }
