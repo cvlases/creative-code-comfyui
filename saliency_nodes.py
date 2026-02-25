@@ -36,7 +36,6 @@ IMAGENET_STD  = np.array([0.229, 0.224, 0.225], dtype=np.float32)
 SUPPORTED_MODELS = [
     "vgg16", "vgg19", "resnet50", "resnet101",
     "inception_v3", "mobilenet_v3_large",
-    "efficientnet_b0",
     "densenet121",
 ]
 
