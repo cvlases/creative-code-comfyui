@@ -468,10 +468,14 @@ Default: **25**
 
 ---
 
-Some artwork I've made with the tool so far:
+## Some artwork I've made with the tool so far
+
+Starting with a picture of my dad and sister some 20 years ago...
+
+The algorithms seem to struggle with classifying this image.
 
 
-classifications of this image: *croquet ball, goldfish, mailbox*
+*croquet ball, goldfish, mailbox*
 
 ![street10](../artwork_assets/street10.png)
 ![street1](../artwork_assets/street1.png)
