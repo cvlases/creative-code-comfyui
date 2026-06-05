@@ -79,7 +79,8 @@ def _load_model(model_name: str):
                 except AttributeError:
                     model = constructor(pretrained=True)
 
-                model.eval().cpu()
+                device = "cuda" if torch.cuda.is_available() else "cpu"
+                model.eval().to(device)
                 # Deep clone all params and buffers to ensure no inference tensors remain
                 for param in model.parameters():
                     param.data = param.data.clone()
