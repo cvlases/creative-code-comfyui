@@ -132,8 +132,9 @@ def _make_call_model_fn(model, class_idx):
                 images_np = np.array(images, dtype=np.float32)
                 images_tensor = torch.from_numpy(images_np).permute(0, 3, 1, 2)
 
-                mean = torch.tensor(IMAGENET_MEAN).view(1, 3, 1, 1)
-                std  = torch.tensor(IMAGENET_STD).view(1, 3, 1, 1)
+                mmean = torch.tensor(IMAGENET_MEAN).view(1, 3, 1, 1).to(DEVICE)
+                std  = torch.tensor(IMAGENET_STD).view(1, 3, 1, 1).to(DEVICE)
+                images_tensor = images_tensor.to(DEVICE)
                 images_tensor = (images_tensor - mean) / std
 
                 # .clone() is required when escaping inference_mode
