@@ -33,6 +33,8 @@ def _ensure_deps():
 IMAGENET_MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32)
 IMAGENET_STD  = np.array([0.229, 0.224, 0.225], dtype=np.float32)
 
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+
 SUPPORTED_MODELS = [
     "vgg16", "vgg19", "resnet50", "resnet101",
     "inception_v3", "mobilenet_v3_large",
@@ -95,7 +97,7 @@ def _load_model(model_name: str):
                             setattr(model, buf_name, buf.clone())
 
                 _model_cache[model_name] = model
-                print(f"[SaliencyNodes] Loaded {model_name} on CPU (grad-safe)")
+                print(f"[SaliencyNodes] Loaded {model_name} on {DEVICE} (grad-safe)")
     return _model_cache[model_name]
 
 
@@ -145,7 +147,7 @@ def _make_call_model_fn(model, class_idx):
                 model.zero_grad()
                 target.backward()
 
-                gradients = images_tensor.grad.detach().numpy()
+                gradients = images_tensor.grad.detach().cpu().numpy()
                 gradients = np.transpose(gradients, (0, 2, 3, 1))  # BCHW→BHWC
 
                 result = {}
@@ -164,8 +166,9 @@ def _predict_top_class(model, img_np_hwc: np.ndarray) -> int:
     with torch.inference_mode(False):
         with torch.no_grad():
             t = torch.from_numpy(img_np_hwc).permute(2, 0, 1).unsqueeze(0)
-            mean = torch.tensor(IMAGENET_MEAN).view(1, 3, 1, 1)
-            std  = torch.tensor(IMAGENET_STD).view(1, 3, 1, 1)
+            mean = torch.tensor(IMAGENET_MEAN).view(1, 3, 1, 1).to(DEVICE)
+            std  = torch.tensor(IMAGENET_STD).view(1, 3, 1, 1).to(DEVICE)
+            t = t.to(DEVICE)
             t = (t - mean) / std
             out = model(t)
             if hasattr(out, "logits"):
