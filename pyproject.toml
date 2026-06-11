@@ -36,7 +36,7 @@ Documentation = "https://github.com/cvlases/creative_code/wiki"
 
 
 [tool.comfy]
-PublisherId = "cvlases"
+PublisherId = "clorb"
 DisplayName = "creative-code"
 Icon = ""
 Tags = []
