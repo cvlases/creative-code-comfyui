@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "creative_code"
-version = "1.0.0"
+version = "1.0.1"
 description = "explainable AI for comfy"
 authors = [
   {name = "Claire Vlases", email = "clairevlases@gmail.com"}
