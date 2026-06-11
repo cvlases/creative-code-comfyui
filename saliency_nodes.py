@@ -1,5 +1,5 @@
 """
-ComfyUI Saliency Nodes — Algorithmic Attention
+ComfyUI Saliency Nodes - Algorithmic Attention
 For Mac (Apple Silicon) + comfyenv conda setup.
 
 Install:  pip install saliency torchvision matplotlib
@@ -10,7 +10,7 @@ import torch
 import torch.nn.functional as F
 import numpy as np
 
-# ── Lazy imports ──────────────────────────────────────────────────────────────
+# Lazy imports
 _saliency = None
 _torchvision_models = None
 
@@ -29,7 +29,6 @@ def _ensure_deps():
         except ImportError:
             raise ImportError("[SaliencyNodes] Run: pip install torchvision")
 
-# ── Constants ─────────────────────────────────────────────────────────────────
 IMAGENET_MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32)
 IMAGENET_STD  = np.array([0.229, 0.224, 0.225], dtype=np.float32)
 
@@ -43,7 +42,6 @@ SUPPORTED_MODELS = [
 
 _model_cache: dict = {}
 
-# ── ImageNet class labels ─────────────────────────────────────────────────────
 _imagenet_labels: list = []
 
 def _get_imagenet_label(class_idx: int) -> str:
@@ -57,11 +55,10 @@ def _get_imagenet_label(class_idx: int) -> str:
     if _imagenet_labels and 0 <= class_idx < len(_imagenet_labels):
         return _imagenet_labels[class_idx]
     return f"class_{class_idx}"
+
 def _load_model(model_name: str):
     if model_name not in _model_cache:
         _ensure_deps()
-        # Must load outside inference_mode — ComfyUI wraps everything in it,
-        # and tensors created inside inference_mode can't be used with autograd.
         with torch.inference_mode(False):
             with torch.enable_grad():
                 constructor = getattr(_torchvision_models, model_name)
@@ -74,7 +71,6 @@ def _load_model(model_name: str):
                         "vgg16":              tv.VGG16_Weights.DEFAULT,
                         "vgg19":              tv.VGG19_Weights.DEFAULT,
                         "mobilenet_v3_large": tv.MobileNet_V3_Large_Weights.DEFAULT,
-                        # "efficientnet_b0":    tv.EfficientNet_B0_Weights.DEFAULT,
                         "densenet121":        tv.DenseNet121_Weights.DEFAULT,
                     }
                     model = constructor(weights=weight_map.get(model_name))
@@ -83,12 +79,10 @@ def _load_model(model_name: str):
 
                 device = "cuda" if torch.cuda.is_available() else "cpu"
                 model.eval().to(device)
-                # Deep clone all params and buffers to ensure no inference tensors remain
                 for param in model.parameters():
                     param.data = param.data.clone()
                 for buf_name, buf in model.named_buffers():
                     if buf is not None:
-                        # set_buffer isn't directly available, use the parent module
                         parts = buf_name.rsplit('.', 1)
                         if len(parts) == 2:
                             parent = dict(model.named_modules())[parts[0]]
@@ -101,7 +95,6 @@ def _load_model(model_name: str):
     return _model_cache[model_name]
 
 
-# ── Image helpers ─────────────────────────────────────────────────────────────
 def _comfy_to_np(image_tensor: torch.Tensor) -> np.ndarray:
     return image_tensor[0].cpu().numpy().astype(np.float32)
 
@@ -116,17 +109,10 @@ def _resize_np(img: np.ndarray, h: int, w: int) -> np.ndarray:
     return t.squeeze(0).permute(1, 2, 0).numpy()
 
 
-# ── call_model_function for PAIR saliency ─────────────────────────────────────
 def _make_call_model_fn(model, class_idx):
-    """
-    ComfyUI runs node execution inside torch.inference_mode() which disables
-    autograd entirely. We must escape that context to compute gradients.
-    Everything runs on CPU to avoid MPS autograd issues.
-    """
     def call_model_function(images, call_model_args=None, expected_keys=None):
         import saliency.core as saliency
 
-        # Double-escape any no_grad / inference_mode context from ComfyUI
         with torch.inference_mode(False):
             with torch.enable_grad():
                 images_np = np.array(images, dtype=np.float32)
@@ -136,8 +122,6 @@ def _make_call_model_fn(model, class_idx):
                 std  = torch.tensor(IMAGENET_STD).view(1, 3, 1, 1).to(DEVICE)
                 images_tensor = images_tensor.to(DEVICE)
                 images_tensor = (images_tensor - mean) / std
-
-                # .clone() is required when escaping inference_mode
                 images_tensor = images_tensor.clone().detach().requires_grad_(True)
 
                 output = model(images_tensor)
@@ -149,7 +133,7 @@ def _make_call_model_fn(model, class_idx):
                 target.backward()
 
                 gradients = images_tensor.grad.detach().cpu().numpy()
-                gradients = np.transpose(gradients, (0, 2, 3, 1))  # BCHW→BHWC
+                gradients = np.transpose(gradients, (0, 2, 3, 1))
 
                 result = {}
                 if saliency.INPUT_OUTPUT_GRADIENTS in (expected_keys or []):
@@ -162,7 +146,6 @@ def _make_call_model_fn(model, class_idx):
     return call_model_function
 
 
-# ── Top class prediction ───────────────────────────────────────────────────────
 def _predict_top_class(model, img_np_hwc: np.ndarray) -> int:
     with torch.inference_mode(False):
         with torch.no_grad():
@@ -177,11 +160,8 @@ def _predict_top_class(model, img_np_hwc: np.ndarray) -> int:
             return int(out.argmax(dim=1).item())
 
 
-# ── Visualization helpers ──────────────────────────────────────────────────────
 def _vis_grayscale(mask):
-    """Handle both 3D (H,W,3) gradient masks and 2D (H,W) XRAI region masks."""
     if mask.ndim == 2:
-        # XRAI returns 2D directly — just normalize it
         m = np.abs(mask)
         vmax = np.percentile(m, 99)
         return np.clip(m / (vmax + 1e-8), 0, 1)
@@ -206,7 +186,6 @@ def _apply_heatmap(gray2d, original_hwc, colormap="viridis"):
     return np.clip(original_hwc * 0.45 + heatmap * 0.55, 0, 1)
 
 
-# ── Shared saliency method runner ─────────────────────────────────────────────
 def _run_saliency_method(method, call_fn, img_np, use_smoothgrad,
                           n_samples, noise, ig_steps):
     _ensure_deps()
@@ -254,9 +233,7 @@ def _run_saliency_method(method, call_fn, img_np, use_smoothgrad,
     raise ValueError(f"Unknown method: {method}")
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# Node 1: Saliency Map
-# ══════════════════════════════════════════════════════════════════════════════
+# Node 1: Gradient Saliency Visualizer
 class SaliencyMapNode:
     METHODS = ["Vanilla Gradients", "SmoothGrad", "Integrated Gradients",
                "Blur IG", "Guided IG", "XRAI"]
@@ -293,7 +270,7 @@ class SaliencyMapNode:
 
         if class_index < 0:
             class_index = _predict_top_class(model, img_np_r)
-            print(f"[SaliencyMap] Auto class: {class_index}")
+            print(f"[Gradient Saliency Visualizer] Auto class: {class_index}")
 
         call_fn = _make_call_model_fn(model, class_index)
         mask3d = _run_saliency_method(method, call_fn, img_np_r, use_smoothgrad,
@@ -316,9 +293,7 @@ class SaliencyMapNode:
         raise ValueError(f"Unknown mode: {mode}")
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# Node 2: Saliency Comparison Grid
-# ══════════════════════════════════════════════════════════════════════════════
+# Node 2: Saliency Method Comparison Grid
 class SaliencyComparisonNode:
     @classmethod
     def INPUT_TYPES(cls):
@@ -358,9 +333,7 @@ class SaliencyComparisonNode:
         return (_np_to_comfy(np.concatenate([row1, row2], axis=0)),)
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# Node 3: Explainable AI — the main art node
-# ══════════════════════════════════════════════════════════════════════════════
+# Node 3: Algorithmic Attention Art
 class ExplainableAIArtNode:
 
     METHODS = SaliencyMapNode.METHODS
@@ -371,17 +344,17 @@ class ExplainableAIArtNode:
     ]
 
     COMPOSITIONS = [
-        "isolation",   # color only where AI looks, grayscale elsewhere
-        "overlay",     # classic heatmap blend
-        "spotlight",   # radial fade from salient to dark
-        "ghost",       # faded original + bright highlights
-        "invert",      # show what the algorithm IGNORES
-        "cutout",      # hard binary: only pixels above threshold
-        "multiply",    # attention dims non-salient areas
-        "screen",      # attention brightens salient areas
-        "triptych",    # original | mask | composite side by side
-        "mask_only",   # just the colored saliency map
-        "pure_white",  # black background, white gradient pixels only
+        "isolation",
+        "overlay",
+        "spotlight",
+        "ghost",
+        "invert",
+        "cutout",
+        "multiply",
+        "screen",
+        "triptych",
+        "mask_only",
+        "pure_white",
     ]
 
     @classmethod
@@ -419,7 +392,7 @@ class ExplainableAIArtNode:
             class_index = _predict_top_class(model, img_np_r)
 
         label = _get_imagenet_label(class_index)
-        print(f"[ExplainableAI] Visualizing class {class_index}: {label}")
+        print(f"[Algorithmic Attention Art] Visualizing class {class_index}: {label}")
 
         call_fn = _make_call_model_fn(model, class_index)
         mask3d = _run_saliency_method(method, call_fn, img_np_r,
@@ -429,7 +402,7 @@ class ExplainableAIArtNode:
         artwork = self._compose(mask3d, img_np_r, composition, colormap,
                                 intensity, contrast, threshold)
 
-        caption = f"{label} (class {class_index}) — {model_name} / {method}"
+        caption = f"{label} (class {class_index}), {model_name} / {method}"
         return (_np_to_comfy(artwork), caption)
 
     def _compose(self, mask3d, original, composition, colormap,
@@ -477,14 +450,13 @@ class ExplainableAIArtNode:
             return np.concatenate([original, heatmap, overlay], axis=1)
 
         elif composition == "pure_white":
-            # Black background, white where the gradient fires
             white = gray[..., None] * np.ones((1, 1, 3), dtype=np.float32)
             return np.clip(white, 0, 1)
 
         return heatmap
 
 
-# ── Registration ───────────────────────────────────────────────────────────────
+# Registration
 NODE_CLASS_MAPPINGS = {
     "SaliencyMap":        SaliencyMapNode,
     "SaliencyComparison": SaliencyComparisonNode,
@@ -492,7 +464,7 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "SaliencyMap":        "Saliency Map (PAIR)",
-    "SaliencyComparison": "Saliency Comparison Grid (PAIR)",
-    "SaliencyArt":        "Explainable AI",
+    "SaliencyMap":        "Gradient Saliency Visualizer",
+    "SaliencyComparison": "Saliency Method Comparison Grid",
+    "SaliencyArt":        "Algorithmic Attention Art",
 }
