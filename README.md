@@ -71,7 +71,7 @@ VGG models have the largest, most spatially coarse attention patterns of any mod
 
 **VGG16**
 
-![vgg16](./model_demo/vgg16.png)
+![vgg16](./documentation/model_demo/vgg16.png)
 
 **VGG19**
 
