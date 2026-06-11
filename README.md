@@ -75,7 +75,7 @@ VGG models have the largest, most spatially coarse attention patterns of any mod
 
 **VGG19**
 
-![vgg19](model_demo/vgg19.png)
+![vgg19](./documentation/model_demo/vgg19.png)
 
 ---
 
@@ -91,11 +91,11 @@ ResNets produce more distributed, semantically coherent attention than VGG. The 
 
 **ResNet50**
 
-![resnet50](model_demo/resnet50.png)
+![resnet50](./documentation/model_demo/resnet50.png)
 
 **ResNet101**
 
-![resnet101](model_demo/resnet101.png)
+![resnet101](./documentation/model_demo/resnet101.png)
 
 ---
 
@@ -112,7 +112,7 @@ DenseNet produces the most distributed, multi-scale attention patterns. Because 
 
 **DenseNet121**
 
-![densenet121](model_demo/densenet121.png)
+![densenet121](./documentation/model_demo/densenet121.png)
 
 ---
 
@@ -128,7 +128,7 @@ Because features are detected at multiple scales simultaneously throughout the n
 
 **InceptionV3**
 
-![inception_v3](model_demo/inception_v3.png)
+![inception_v3](./documentation/model_demo/inception_v3.png)
 
 ---
 
@@ -143,7 +143,7 @@ MobileNet produces the sparsest, most minimal attention maps. It often fixates o
 
 **MobileNetV3**
 
-![mobilenet_v3_large](model_demo/mobilenet_v3_large.png)
+![mobilenet_v3_large](./documentation/model_demo/mobilenet_v3_large.png)
 
 ---
 
@@ -165,7 +165,7 @@ These are the different mathematical techniques used to ask "what pixels mattere
 
 The simplest approach: take the partial derivative of the classification output with respect to each input pixel. The result is noisy, almost like static or grain, because it shows every pixel that had *any* influence at all. 
 
-![Vanilla Gradients](method_demo/vanilla_grad.png)
+![Vanilla Gradients](./documentation/method_demo/vanilla_grad.png)
 
 ---
 
@@ -175,7 +175,7 @@ Takes Vanilla Gradients but runs it many times with small random noise added to 
 
 The `smoothgrad_samples` parameter controls how many noisy runs are averaged. More = smoother but proportionally slower.
 
-![SmoothGrad](method_demo/smooth_grad.png)
+![SmoothGrad](./documentation/method_demo/smooth_grad.png)
 
 ---
 
@@ -185,7 +185,7 @@ Instead of computing gradients at only the input image, this traces a path from 
 
 The `ig_steps` parameter controls how many interpolation steps are taken. More steps = more accurate attribution, slower computation. 
 
-![Integrated Gradients](method_demo/integrated_grad.png)
+![Integrated Gradients](./documentation/method_demo/integrated_grad.png)
 
 ---
 
@@ -193,7 +193,7 @@ The `ig_steps` parameter controls how many interpolation steps are taken. More s
 
 A variant of Integrated Gradients where instead of interpolating from a black image to the input, it interpolates from a *heavily blurred version* of the image to the sharp version. The difference in what's being integrated changes what gets attributed.
 
-![Blur IG](method_demo/blur_ig.png)
+![Blur IG](./documentation/method_demo/blur_ig.png)
 
 ---
 
@@ -201,7 +201,7 @@ A variant of Integrated Gradients where instead of interpolating from a black im
 
 Another IG variant that uses gradient information to choose a smarter integration path, concentrating steps where the gradients are largest rather than taking uniform steps. This produces sharper, higher-contrast attribution maps with more defined edges.
 
-![Guided IG](method_demo/guided_ig.png)
+![Guided IG](./documentation/method_demo/guided_ig.png)
 
 ---
 
@@ -209,7 +209,7 @@ Another IG variant that uses gradient information to choose a smarter integratio
 
 A completely different approach. Instead of pixel-level gradient computation, XRAI segments the image into regions using an oversegmentation algorithm, then attributes importance to each region as a whole by measuring how much removing it changes the model's output.
 
-![XRAI](method_demo/XRAI.png)
+![XRAI](./documentation/method_demo/XRAI.png)
 
 ---
 
@@ -225,7 +225,7 @@ These control how the saliency map is composited back onto the original image. T
 
 Salient regions appear in full color using the chosen colormap; everything else converts to greyscale. 
 
-![isolation](composition_demo/isolation.png)
+![isolation](./documentation/composition_demo/isolation.png)
 
 ---
 
@@ -234,7 +234,7 @@ Salient regions appear in full color using the chosen colormap; everything else 
 Classic heatmap blend. The colormap is alpha-composited over the original at the `intensity` level. 
 
 
-![overlay](composition_demo/overlay.png)
+![overlay](./documentation/composition_demo/overlay.png)
 
 ---
 
@@ -242,7 +242,7 @@ Classic heatmap blend. The colormap is alpha-composited over the original at the
 
 Salient regions are bright; everything else darkens.
 
-![spotlight](composition_demo/spotlight.png)
+![spotlight](./documentation/composition_demo/spotlight.png)
 
 ---
 
@@ -250,7 +250,7 @@ Salient regions are bright; everything else darkens.
 
 The original image fades to 25% opacity and the saliency map layers over it. 
 
-![ghost](composition_demo/ghost.png)
+![ghost](./documentation/composition_demo/ghost.png)
 
 ---
 
@@ -258,7 +258,7 @@ The original image fades to 25% opacity and the saliency map layers over it.
 
 Shows what the algorithm *ignores* instead of what it sees. The saliency map is inverted before compositing.
 
-![invert](composition_demo/invert.png)
+![invert](./documentation/composition_demo/invert.png)
 
 ---
 
@@ -266,7 +266,7 @@ Shows what the algorithm *ignores* instead of what it sees. The saliency map is 
 
 Hard binary mask. Pixels above the `threshold` value show the original image in full; everything below shows a dim version of the heatmap. 
 
-![cutout](composition_demo/cutout.png)
+![cutout](./documentation/composition_demo/cutout.png)
 
 ---
 
@@ -274,7 +274,7 @@ Hard binary mask. Pixels above the `threshold` value show the original image in 
 
 Photoshop-style multiply blend. 
 
-![multiply](composition_demo/multiply.png)
+![multiply](./documentation/composition_demo/multiply.png)
 
 ---
 
@@ -282,7 +282,7 @@ Photoshop-style multiply blend.
 
 Photoshop-style screen blend. Attention brightens salient regions. 
 
-![screen](composition_demo/screen.png)
+![screen](./documentation/composition_demo/screen.png)
 
 ---
 
@@ -290,7 +290,7 @@ Photoshop-style screen blend. Attention brightens salient regions.
 
 Outputs three panels side by side: original image | saliency map alone | composite. Shows the full chain of the visualization in one frame. 
 
-![triptych](composition_demo/triptych.png)
+![triptych](./documentation/composition_demo/triptych.png)
 
 ---
 
@@ -298,7 +298,7 @@ Outputs three panels side by side: original image | saliency map alone | composi
 
 Just the colored saliency map with no original image. 
 
-![mask_only](composition_demo/mask_only.png)
+![mask_only](./documentation/composition_demo/mask_only.png)
 
 ---
 
@@ -306,7 +306,7 @@ Just the colored saliency map with no original image.
 
 Black background, saliency values mapped directly to white intensity. 
 
-![pure_white](composition_demo/pure_white.png)
+![pure_white](./documentation/composition_demo/pure_white.png)
 
 ---
 
@@ -335,43 +335,43 @@ These apply a color gradient to the greyscale saliency values. Low values (less 
 
 **cool**
 
-![cool](colormap_demo/cool.png)
+![cool](./documentation/colormap_demo/cool.png)
 
 **hot**
 
-![hot](colormap_demo/hot.png)
+![hot](./documentation/colormap_demo/hot.png)
 
 **copper**
 
-![copper](colormap_demo/copper.png)
+![copper](./documentation/colormap_demo/copper.png)
 
 **inferno**
 
-![inferno](colormap_demo/inferno.png)
+![inferno](./documentation/colormap_demo/inferno.png)
 
 **magma**
 
-![magma](colormap_demo/magma.png)
+![magma](./documentation/colormap_demo/magma.png)
 
 **ocean**
 
-![ocean](colormap_demo/ocean.png)
+![ocean](./documentation/colormap_demo/ocean.png)
 
 **plasma**
 
-![plasma](colormap_demo/plasma.png)
+![plasma](./documentation/colormap_demo/plasma.png)
 
 **spring**
 
-![spring](colormap_demo/spring.png)
+![spring](./documentation/colormap_demo/spring.png)
 
 **twilight**
 
-![twilight](colormap_demo/twilight.png)
+![twilight](./documentation/colormap_demo/twilight.png)
 
 **viridis**
 
-![viridis](colormap_demo/viridis.png)
+![viridis](./documentation/colormap_demo/viridis.png)
 
 ---
 
@@ -387,11 +387,11 @@ Default: **0.75** — chosen as the midpoint that preserves enough of the origin
 
 **intensity = 0.5** (lower)
 
-![low_intensity](extras_demo/intensity_0.5.png)
+![low_intensity](./documentation/extras_demo/intensity_0.5.png)
 
 **intensity = 1.0** (higher / full)
 
-![high_intensity](extras_demo/intensity_1.0.png)
+![high_intensity](./documentation/extras_demo/intensity_1.0.png)
 
 ---
 
@@ -403,11 +403,11 @@ Default: **1.5**.
 
 **contrast = 1.0** (flat, no adjustment)
 
-![low_contrast](extras_demo/contrast_1.0.png)
+![low_contrast](./documentation/extras_demo/contrast_1.0.png)
 
 **contrast = 2.0** (more aggressive)
 
-![high_contrast](extras_demo/contrast_2.0.png)
+![high_contrast](./documentation/extras_demo/contrast_2.0.png)
 
 ---
 
@@ -419,11 +419,11 @@ Default: **0.25** — chosen to eliminate low-confidence gradient noise while pr
 
 **threshold = 0.0** (nothing filtered)
 
-![low_threshold](extras_demo/threshold_0.png)
+![low_threshold](./documentation/extras_demo/threshold_0.png)
 
 **threshold = 0.5** (aggressive filtering)
 
-![high_threshold](extras_demo/threshold_0.5.png)
+![high_threshold](./documentation/extras_demo/threshold_0.5.png)
 
 ---
 
@@ -437,11 +437,11 @@ The classification label output of the node always shows what class is actually 
 
 **class_index = 1** (a modest override)
 
-![index-1](extras_demo/class_index_1.png)
+![index-1](./documentation/extras_demo/class_index_1.png)
 
 **class_index = 10** (a larger displacement)
 
-![index-10](extras_demo/class_index_10.png)
+![index-10](./documentation/extras_demo/class_index_10.png)
 
 ---
 
@@ -461,7 +461,7 @@ Default: **true** — the aesthetic improvement is significant and the default s
 
 **use_smoothgrad = false**
 
-![smooth_false](extras_demo/smooth_grad_false.png)
+![smooth_false](./documentation/extras_demo/smooth_grad_false.png)
 
 ---
 
@@ -473,7 +473,7 @@ Default: **25**
 
 **samples = 50**
 
-![samples_50](extras_demo/samples_50.png)
+![samples_50](./documentation/extras_demo/samples_50.png)
 
 ---
 
