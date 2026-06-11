@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "creative_code"
-version = "1.0.1"
+version = "1.0.0"
 description = "Gradient-based saliency visualization nodes for ComfyUI. Includes a single-method visualizer, a six-method comparison grid, and an art-focused composition node with colormaps and blend modes."
 authors = [
   {name = "Claire Vlases", email = "clairevlases@gmail.com"}
