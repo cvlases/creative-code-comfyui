@@ -1,7 +1,7 @@
 # Algorithmic Attention (XAI) Tool Documentation
 
 
-![flower](../artwork_assets/flower-three.png)
+![flower](./artwork_assets/flower-three.png)
 
 My tool uses pre-trained image classifiers using gradient-based saliency methods from Google's [PAIR saliency library](https://github.com/PAIR-code/saliency), exposing the hidden attentional logic of neural networks as visual artifacts. Built as a custom ComfyUI node set. 
 
