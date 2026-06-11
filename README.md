@@ -13,7 +13,7 @@ XAI:
 
 I do research with phD student Katelyn Morrison, and learned about [her work with saliency mapping](https://cmu-vis-2021.github.io/Insightful-Saliency-Maps/), which is a visual way to show what areas of an image are most significant for ML classification.
 
-![map](../documentation/saliency_map.png)
+![map](./documentation/saliency_map.png)
 
 When I saw these maps, I immediately wondered if I could make art using ML classifications.
 
@@ -39,7 +39,7 @@ The core question my tool seeks to answer: *when a model classifies an image, wh
 
 ## How It Works
 
-![node](../documentation/the_node.png)
+![node](./documentation/the_node.png)
 
 
 All seven supported models are **convolutional neural networks (CNNs)** trained on ImageNet, which is a dataset of 1.2 million images across 1,000 categories. The training process adjusts millions of numerical weights until the network can reliably distinguish between categories like "labrador retriever," "coffee," and "duck."
@@ -498,15 +498,15 @@ The algorithms seem to struggle with classifying this image.
 
 *croquet ball, goldfish, mailbox*
 
-![street10](../artwork_assets/street10.png)
-![street1](../artwork_assets/street1.png)
-![street2](../artwork_assets/street2.png)
-![street3](../artwork_assets/street3.png)
-![street4](../artwork_assets/street4.png)
-![street11](../artwork_assets/street11.png)
-![street5](../artwork_assets/street5.png)
-![street6](../artwork_assets/street6.png)
-![street12](../artwork_assets/street12.png)
-![street7](../artwork_assets/street7.png)
-![street8](../artwork_assets/street8.png)
-![street9](../artwork_assets/street9.png)
+![street10](./artwork_assets/street10.png)
+![street1](./artwork_assets/street1.png)
+![street2](./artwork_assets/street2.png)
+![street3](./artwork_assets/street3.png)
+![street4](./artwork_assets/street4.png)
+![street11](./artwork_assets/street11.png)
+![street5](./artwork_assets/street5.png)
+![street6](./artwork_assets/street6.png)
+![street12](./artwork_assets/street12.png)
+![street7](./artwork_assets/street7.png)
+![street8](./artwork_assets/street8.png)
+![street9](./artwork_assets/street9.png)
